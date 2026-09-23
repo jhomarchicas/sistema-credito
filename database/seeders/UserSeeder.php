@@ -56,7 +56,7 @@ class UserSeeder extends Seeder
                 'telefono' => '70000000',
                 'correo' => 'andrea@gmail.com',
                 'direccion' => 'Zacatecoluca',
-                'estado' => 'Activo',
+                'estado' => 'activo',
             ]
         );
 
