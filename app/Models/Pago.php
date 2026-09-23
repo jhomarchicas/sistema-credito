@@ -14,6 +14,7 @@ class Pago extends Model
         'credito_id',
         'fecha_pago',
         'monto',
+        'saldo_restante',
         'referencia',
         'observaciones',
     ];
@@ -21,6 +22,7 @@ class Pago extends Model
     protected $casts = [
         'fecha_pago' => 'date',
         'monto' => 'decimal:2',
+        'saldo_restante' => 'decimal:2',
     ];
 
     /**

@@ -1,100 +1,399 @@
-<nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
-    <!-- Primary Navigation Menu -->
+<nav
+    x-data="{ open: false, userOpen: false }"
+    class="sticky top-0 z-50 bg-white border-b border-slate-200 shadow-sm"
+>
+    @php
+        $usuario = Auth::user();
+
+        $puedeGestionar = $usuario->isSuperUsuario()
+            || $usuario->isGestorCobros();
+    @endphp
+
+    <!-- Navegación principal -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
         <div class="flex justify-between h-16">
-            <div class="flex">
-                <!-- Logo -->
-                <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}">
-                        <x-application-logo class="block h-9 w-auto fill-current text-gray-800" />
+
+            <!-- IZQUIERDA -->
+            <div class="flex items-center">
+
+                <!-- Marca -->
+                <a
+                    href="{{ route('dashboard') }}"
+                    class="flex items-center gap-3 shrink-0"
+                >
+                    <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-sm">
+                        <i class="bi bi-wallet2 text-white text-xl"></i>
+                    </div>
+
+                    <div class="hidden lg:block leading-tight">
+                        <p class="font-bold text-slate-800">
+                            Gestión de Créditos
+                        </p>
+
+                        <p class="text-[11px] text-slate-500">
+                            Sistema administrativo
+                        </p>
+                    </div>
+                </a>
+
+                <!-- Navegación escritorio -->
+                <div class="hidden md:flex items-center gap-1 ml-8">
+
+                    <!-- Dashboard -->
+                    <a
+                        href="{{ route('dashboard') }}"
+                        class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition
+                            {{ request()->routeIs('dashboard')
+                                ? 'bg-indigo-50 text-indigo-700'
+                                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}"
+                    >
+                        <i class="bi bi-grid-1x2-fill"></i>
+                        Dashboard
                     </a>
+
+                    <!-- Solo Super Usuario y Gestor de Cobros -->
+                    @if($puedeGestionar)
+
+                        <!-- Clientes -->
+                        <a
+                            href="{{ route('clientes.index') }}"
+                            class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition
+                                {{ request()->routeIs('clientes.*')
+                                    ? 'bg-indigo-50 text-indigo-700'
+                                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}"
+                        >
+                            <i class="bi bi-people-fill"></i>
+                            Clientes
+                        </a>
+
+                        <!-- Créditos -->
+                        <a
+                            href="{{ route('creditos.index') }}"
+                            class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition
+                                {{ request()->routeIs('creditos.*')
+                                    ? 'bg-indigo-50 text-indigo-700'
+                                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}"
+                        >
+                            <i class="bi bi-cash-stack"></i>
+                            Créditos
+                        </a>
+
+                        <!-- Pagos -->
+                        <a
+                            href="{{ route('pagos.index') }}"
+                            class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition
+                                {{ request()->routeIs('pagos.*')
+                                    ? 'bg-indigo-50 text-indigo-700'
+                                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}"
+                        >
+                            <i class="bi bi-receipt"></i>
+                            Pagos
+                        </a>
+
+                    @endif
+
                 </div>
 
-                <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
-                    </x-nav-link>
-                </div>
             </div>
 
-            <!-- Settings Dropdown -->
-            <div class="hidden sm:flex sm:items-center sm:ms-6">
-                <x-dropdown align="right" width="48">
-                    <x-slot name="trigger">
-                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
-                            <div>{{ Auth::user()->name }}</div>
+            <!-- DERECHA -->
+            <div class="flex items-center gap-3">
 
-                            <div class="ms-1">
-                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                </svg>
+                <!-- Registrar pago -->
+                @if($puedeGestionar)
+                    <a
+                        href="{{ route('pagos.create') }}"
+                        class="hidden lg:flex items-center gap-2
+                               bg-indigo-600 hover:bg-indigo-700
+                               text-white px-4 py-2 rounded-lg
+                               text-sm font-semibold transition shadow-sm"
+                    >
+                        <i class="bi bi-plus-lg"></i>
+                        Registrar pago
+                    </a>
+                @endif
+
+                <!-- Usuario escritorio -->
+                <div
+                    class="relative hidden sm:block"
+                    @click.outside="userOpen = false"
+                >
+
+                    <button
+                        type="button"
+                        @click="userOpen = !userOpen"
+                        class="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-slate-100 transition"
+                    >
+
+                        <!-- Avatar -->
+                        <div class="w-9 h-9 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold text-sm">
+                            {{ strtoupper(substr($usuario->name, 0, 1)) }}
+                        </div>
+
+                        <!-- Usuario -->
+                        <div class="hidden xl:block text-left leading-tight">
+
+                            <p class="text-sm font-semibold text-slate-700 max-w-36 truncate">
+                                {{ $usuario->name }}
+                            </p>
+
+                            <p class="text-xs text-slate-500 mt-0.5">
+                                {{ $usuario->role }}
+                            </p>
+
+                        </div>
+
+                        <i
+                            class="bi bi-chevron-down text-xs text-slate-400 transition-transform"
+                            :class="{ 'rotate-180': userOpen }"
+                        ></i>
+
+                    </button>
+
+                    <!-- Dropdown -->
+                    <div
+                        x-cloak
+                        x-show="userOpen"
+                        x-transition
+                        class="absolute right-0 mt-2 w-64 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden"
+                    >
+
+                        <!-- Información del usuario -->
+                        <div class="px-4 py-4 border-b border-slate-100">
+
+                            <div class="flex items-center gap-3">
+
+                                <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold">
+                                    {{ strtoupper(substr($usuario->name, 0, 1)) }}
+                                </div>
+
+                                <div class="min-w-0">
+
+                                    <p class="font-semibold text-sm text-slate-800 truncate">
+                                        {{ $usuario->name }}
+                                    </p>
+
+                                    <p class="text-xs text-slate-500 truncate">
+                                        {{ $usuario->email }}
+                                    </p>
+
+                                </div>
+
                             </div>
-                        </button>
-                    </x-slot>
 
-                    <x-slot name="content">
-                        <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Profile') }}
-                        </x-dropdown-link>
+                            <!-- Rol -->
+                            <div class="mt-3">
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-semibold">
+                                    <i class="bi bi-person-badge"></i>
+                                    {{ $usuario->role }}
+                                </span>
+                            </div>
 
-                        <!-- Authentication -->
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
+                        </div>
 
-                            <x-dropdown-link :href="route('logout')"
-                                    onclick="event.preventDefault();
-                                                this.closest('form').submit();">
-                                {{ __('Log Out') }}
-                            </x-dropdown-link>
-                        </form>
-                    </x-slot>
-                </x-dropdown>
-            </div>
+                        <!-- Opciones -->
+                        <div class="p-2">
 
-            <!-- Hamburger -->
-            <div class="-me-2 flex items-center sm:hidden">
-                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
-                    <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                        <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                            <a
+                                href="{{ route('dashboard') }}"
+                                class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
+                            >
+                                <i class="bi bi-speedometer2 text-base"></i>
+                                Dashboard
+                            </a>
+
+                            <a
+                                href="{{ route('profile.edit') }}"
+                                class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
+                            >
+                                <i class="bi bi-person-circle text-base"></i>
+                                Mi perfil
+                            </a>
+
+                        </div>
+
+                        <!-- Cerrar sesión -->
+                        <div class="border-t border-slate-100 p-2">
+
+                            <form
+                                method="POST"
+                                action="{{ route('logout') }}"
+                            >
+                                @csrf
+
+                                <button
+                                    type="submit"
+                                    class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-red-600 hover:bg-red-50 transition"
+                                >
+                                    <i class="bi bi-box-arrow-right text-base"></i>
+                                    Cerrar sesión
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Botón menú móvil -->
+                <button
+                    type="button"
+                    @click="open = !open"
+                    class="md:hidden w-10 h-10 flex items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 transition"
+                >
+                    <i
+                        class="bi text-xl"
+                        :class="open ? 'bi-x-lg' : 'bi-list'"
+                    ></i>
                 </button>
+
             </div>
+
         </div>
+
     </div>
 
-    <!-- Responsive Navigation Menu -->
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
-        <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                {{ __('Dashboard') }}
-            </x-responsive-nav-link>
+    <!-- MENÚ MÓVIL -->
+    <div
+        x-cloak
+        x-show="open"
+        x-transition
+        class="md:hidden border-t border-slate-200 bg-white"
+    >
+
+        <!-- Enlaces -->
+        <div class="px-4 py-4 space-y-1">
+
+            <!-- Dashboard -->
+            <a
+                href="{{ route('dashboard') }}"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition
+                    {{ request()->routeIs('dashboard')
+                        ? 'bg-indigo-50 text-indigo-700'
+                        : 'text-slate-600 hover:bg-slate-100' }}"
+            >
+                <i class="bi bi-grid-1x2-fill w-5"></i>
+                Dashboard
+            </a>
+
+            @if($puedeGestionar)
+
+                <!-- Clientes -->
+                <a
+                    href="{{ route('clientes.index') }}"
+                    class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition
+                        {{ request()->routeIs('clientes.*')
+                            ? 'bg-indigo-50 text-indigo-700'
+                            : 'text-slate-600 hover:bg-slate-100' }}"
+                >
+                    <i class="bi bi-people-fill w-5"></i>
+                    Clientes
+                </a>
+
+                <!-- Créditos -->
+                <a
+                    href="{{ route('creditos.index') }}"
+                    class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition
+                        {{ request()->routeIs('creditos.*')
+                            ? 'bg-indigo-50 text-indigo-700'
+                            : 'text-slate-600 hover:bg-slate-100' }}"
+                >
+                    <i class="bi bi-cash-stack w-5"></i>
+                    Créditos
+                </a>
+
+                <!-- Pagos -->
+                <a
+                    href="{{ route('pagos.index') }}"
+                    class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition
+                        {{ request()->routeIs('pagos.*')
+                            ? 'bg-indigo-50 text-indigo-700'
+                            : 'text-slate-600 hover:bg-slate-100' }}"
+                >
+                    <i class="bi bi-receipt w-5"></i>
+                    Pagos
+                </a>
+
+                <!-- Registrar pago -->
+                <a
+                    href="{{ route('pagos.create') }}"
+                    class="flex items-center justify-center gap-2 mt-3
+                           bg-indigo-600 hover:bg-indigo-700
+                           text-white px-4 py-3 rounded-lg
+                           text-sm font-bold transition"
+                >
+                    <i class="bi bi-plus-circle"></i>
+                    Registrar Pago
+                </a>
+
+            @endif
+
         </div>
 
-        <!-- Responsive Settings Options -->
-        <div class="pt-4 pb-1 border-t border-gray-200">
-            <div class="px-4">
-                <div class="font-medium text-base text-gray-800">{{ Auth::user()->name }}</div>
-                <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
+        <!-- Usuario móvil -->
+        <div class="border-t border-slate-200 px-4 py-4">
+
+            <div class="flex items-center gap-3 mb-4">
+
+                <!-- Avatar -->
+                <div class="w-10 h-10 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold">
+                    {{ strtoupper(substr($usuario->name, 0, 1)) }}
+                </div>
+
+                <!-- Información -->
+                <div class="min-w-0 flex-1">
+
+                    <p class="font-semibold text-sm text-slate-800 truncate">
+                        {{ $usuario->name }}
+                    </p>
+
+                    <p class="text-xs text-slate-500 truncate">
+                        {{ $usuario->email }}
+                    </p>
+
+                    <p class="text-xs font-semibold text-indigo-600 mt-1">
+                        {{ $usuario->role }}
+                    </p>
+
+                </div>
+
             </div>
 
-            <div class="mt-3 space-y-1">
-                <x-responsive-nav-link :href="route('profile.edit')">
-                    {{ __('Profile') }}
-                </x-responsive-nav-link>
+            <div class="space-y-1">
 
-                <!-- Authentication -->
-                <form method="POST" action="{{ route('logout') }}">
+                <!-- Perfil -->
+                <a
+                    href="{{ route('profile.edit') }}"
+                    class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-slate-600 hover:bg-slate-100 transition"
+                >
+                    <i class="bi bi-person-circle"></i>
+                    Mi perfil
+                </a>
+
+                <!-- Cerrar sesión -->
+                <form
+                    method="POST"
+                    action="{{ route('logout') }}"
+                >
                     @csrf
 
-                    <x-responsive-nav-link :href="route('logout')"
-                            onclick="event.preventDefault();
-                                        this.closest('form').submit();">
-                        {{ __('Log Out') }}
-                    </x-responsive-nav-link>
+                    <button
+                        type="submit"
+                        class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-red-600 hover:bg-red-50 transition"
+                    >
+                        <i class="bi bi-box-arrow-right"></i>
+                        Cerrar sesión
+                    </button>
+
                 </form>
+
             </div>
+
         </div>
+
     </div>
+
 </nav>
